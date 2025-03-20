@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Effort Tracker</title>
+    <style>
+        :root {
+            --writing-color: #00acc1;
+            --writing-light: #e0f7fa;
+            --music-color: #4caf50;
+            --music-light: #e8f5e9;
+            --art-color: #ffa000;
+            --art-light: #fff8e1;
+            --bfr-color: #8e24aa;
+            --bfr-light: #f3e5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f7;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .app-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            min-height: 100vh;
+        }
+
+        .app-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .date-selector {
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            padding: 8px 15px;
+            margin: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .date-selector span {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .date-nav {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .category {
+            margin: 15px 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-header {
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .sticker-area {
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            min-height: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+        }
+
+        .sticker {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            margin: 3px;
+            opacity: 0.9;
+        }
+
+        .square-sticker {
+            width: 22px;
+            height: 22px;
+            border-radius: 3px;
+            margin: 3px;
+            opacity: 0.9;
+        }
+
+        .diamond-sticker {
+            width: 22px;
+            height: 22px;
+            transform: rotate(45deg);
+            margin: 5px;
+            opacity: 0.9;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            padding: 10px 15px;
+        }
+
+        .btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            border: 2px solid white;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .btn-add {
+            opacity: 1;
+        }
+
+        .btn-view {
+            opacity: 0.8;
+        }
+
+        .writing {
+            background-color: var(--writing-light);
+        }
+        .writing-header {
+            color: var(--writing-color);
+        }
+        .writing-sticker {
+            background-color: var(--writing-color);
+        }
+        .writing-action {
+            background-color: var(--writing-color);
+        }
+
+        .music {
+            background-color: var(--music-light);
+        }
+        .music-header {
+            color: var(--music-color);
+        }
+        .music-sticker {
+            background-color: var(--music-color);
+        }
+        .music-action {
+            background-color: var(--music-color);
+        }
+
+        .art {
+            background-color: var(--art-light);
+        }
+        .art-header {
+            color: var(--art-color);
+        }
+        .art-sticker {
+            background-color: var(--art-color);
+        }
+        .art-action {
+            background-color: var(--art-color);
+        }
+
+        .bfr {
+            background-color: var(--bfr-light);
+        }
+        .bfr-header {
+            color: var(--bfr-color);
+        }
+        .bfr-sticker {
+            background-color: var(--bfr-color);
+        }
+        .bfr-action {
+            background-color: var(--bfr-color);
+        }
+
+        /* All Stickers Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 10;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background-color: #f0f0f0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .stats-header {
+            padding: 15px 20px;
+            border-radius: 5px;
+            margin: 15px 20px;
+        }
+
+        .year-header {
+            padding: 10px 20px;
+            margin-top: 15px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .month-header {
+            background-color: #f5f5f7;
+            padding: 8px 10px;
+            margin: 0 10px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .month-stickers {
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .bottom-stats {
+            padding: 15px 20px;
+            margin: 15px 20px;
+            border-radius: 5px;
+        }
+
+        .bottom-stats p {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            .app-title {
+                font-size: 18px;
+            }
+            
+            .category {
+                margin: 10px 15px;
+            }
+            
+            .sticker, .square-sticker, .diamond-sticker {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">Effort Tracker</h1>
+        </header>
+
+        <div class="date-selector">
+            <span class="date-nav">◀</span>
+            <span class="current-date">March 2025</span>
+            <span class="date-nav">▶</span>
+        </div>
+
+        <div class="category writing">
+            <div class="category-header writing-header">Writing</div>
+            <div class="sticker-area" id="writing-stickers"></div>
+            <div class="action-buttons">
+                <div class="btn btn-view writing-action" onclick="showAllStickers('writing')">👁</div>
+                <div class="btn btn-add writing-action" onclick="addSticker('writing')">+</div>
+            </div>
+        </div>
+
+        <div class="category music">
+            <div class="category-header music-header">Music</div>
+            <div class="sticker-area" id="music-stickers"></div>
+            <div class="action-buttons">
+                <div class="btn btn-view music-action" onclick="showAllStickers('music')">👁</div>
+                <div class="btn btn-add music-action" onclick="addSticker('music')">+</div>
+            </div>
+        </div>
+
+        <div class="category art">
+            <div class="category-header art-header">Art</div>
+            <div class="sticker-area" id="art-stickers"></div>
+            <div class="action-buttons">
+                <div class="btn btn-view art-action" onclick="showAllStickers('art')">👁</div>
+                <div class="btn btn-add art-action" onclick="addSticker('art')">+</div>
+            </div>
+        </div>
+
+        <div class="category bfr">
+            <div class="category-header bfr-header">BFR</div>
+            <div class="sticker-area" id="bfr-stickers"></div>
+            <div class="action-buttons">
+                <div class="btn btn-view bfr-action" onclick="showAllStickers('bfr')">👁</div>
+                <div class="btn btn-add bfr-action" onclick="addSticker('bfr')">+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Stickers Modal -->
+    <div class="modal" id="all-stickers-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-category-title">Category: All Stickers</h2>
+                <div class="close-btn" onclick="closeModal()">×</div>
+            </div>
+            
+            <div id="modal-content-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Store data in localStorage
+        const STORAGE_KEY = 'effortTrackerData';
+
+        // Initialize data if not exists
+        if (!localStorage.getItem(STORAGE_KEY)) {
+            const initialData = {
+                writing: [],
+                music: [],
+                art: [],
+                bfr: []
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
+        }
+
+        // Get data
+        function getData() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY));
+        }
+
+        // Save data
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // Current date handling
+        let currentDate = new Date();
+        let currentYear = currentDate.getFullYear();
+        let currentMonth = currentDate.getMonth();
+
+        // Update date display
+        function updateDateDisplay() {
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            document.querySelector('.current-date').textContent = `${months[currentMonth]} ${currentYear}`;
+            
+            // Update displayed stickers for the current month
+            displayMonthStickers();
+        }
+
+        // Navigate months
+        document.querySelectorAll('.date-nav')[0].addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateDateDisplay();
+        });
+
+        document.querySelectorAll('.date-nav')[1].addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            updateDateDisplay();
+        });
+
+        // Display stickers for current month
+        function displayMonthStickers() {
+            const data = getData();
+            
+            // Clear existing stickers
+            document.getElementById('writing-stickers').innerHTML = '';
+            document.getElementById('music-stickers').innerHTML = '';
+            document.getElementById('art-stickers').innerHTML = '';
+            document.getElementById('bfr-stickers').innerHTML = '';
+            
+            // Filter and display stickers for the current month
+            for (const category in data) {
+                const stickers = data[category].filter(sticker => {
+                    const stickerDate = new Date(sticker.date);
+                    return stickerDate.getFullYear() === currentYear && stickerDate.getMonth() === currentMonth;
+                });
+                
+                const container = document.getElementById(`${category}-stickers`);
+                
+                stickers.forEach(sticker => {
+                    const stickerElement = document.createElement('div');
+                    
+                    if (category === 'writing') {
+                        stickerElement.className = 'sticker writing-sticker';
+                    } else if (category === 'music') {
+                        stickerElement.className = 'square-sticker music-sticker';
+                    } else if (category === 'art') {
+                        stickerElement.className = 'diamond-sticker art-sticker';
+                    } else if (category === 'bfr') {
+                        stickerElement.className = 'sticker bfr-sticker';
+                    }
+                    
+                    container.appendChild(stickerElement);
+                });
+            }
+        }
+
+        // Add a new sticker
+        function addSticker(category) {
+            const data = getData();
+            
+            // Create new sticker with current date
+            const newSticker = {
+                id: Date.now(), // Use timestamp as unique ID
+                date: new Date().toISOString(),
+                note: '' // Optional: Could implement note feature later
+            };
+            
+            data[category].push(newSticker);
+            saveData(data);
+            
+            // Update display
+            displayMonthStickers();
+            
+            // Animation feedback
+            const btn = document.querySelector(`.${category}-action.btn-add`);
+            btn.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // Show all stickers modal
+        function showAllStickers(category) {
+            const data = getData();
+            const modal = document.getElementById('all-stickers-modal');
+            const modalTitle = document.getElementById('modal-category-title');
+            const modalContent = document.getElementById('modal-content-container');
+            
+            // Set title
+            const categoryNames = {
+                writing: 'Writing',
+                music: 'Music',
+                art: 'Art',
+                bfr: 'BFR'
+            };
+            
+            modalTitle.textContent = `${categoryNames[category]}: All Stickers`;
+            modalTitle.className = `modal-title ${category}-header`;
+            
+            // Clear previous content
+            modalContent.innerHTML = '';
+            
+            // Total count
+            const totalStickers = data[category].length;
+            const firstStickerDate = data[category].length > 0 ? 
+                new Date(data[category].sort((a, b) => new Date(a.date) - new Date(b.date))[0].date) : 
+                new Date();
+            
+            const firstDateStr = `${firstStickerDate.toLocaleString('default', { month: 'long' })} ${firstStickerDate.getDate()}, ${firstStickerDate.getFullYear()}`;
+            
+            // Add stats header
+            const statsHeader = document.createElement('div');
+            statsHeader.className = `stats-header ${category}`;
+            statsHeader.innerHTML = `
+                <p class="${category}-header" style="font-weight: bold; font-size: 16px;">Total Efforts: ${totalStickers}</p>
+                <p class="${category}-header" style="font-size: 14px;">First entry: ${firstDateStr}</p>
+            `;
+            modalContent.appendChild(statsHeader);
+            
+            // Group stickers by year and month
+            const stickersByYear = {};
+            data[category].forEach(sticker => {
+                const date = new Date(sticker.date);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                
+                if (!stickersByYear[year]) {
+                    stickersByYear[year] = {};
+                }
+                
+                if (!stickersByYear[year][month]) {
+                    stickersByYear[year][month] = [];
+                }
+                
+                stickersByYear[year][month].push(sticker);
+            });
+            
+            // Sort years in descending order
+            const years = Object.keys(stickersByYear).sort((a, b) => b - a);
+            
+            // Display stickers by year and month
+            years.forEach(year => {
+                // Create year header
+                const yearHeader = document.createElement('div');
+                yearHeader.className = `year-header ${category}`;
+                yearHeader.innerHTML = `<span class="${category}-header" style="font-weight: bold;">${year}</span>`;
+                modalContent.appendChild(yearHeader);
+                
+                // Sort months in descending order
+                const months = Object.keys(stickersByYear[year]).sort((a, b) => b - a);
+                
+                months.forEach(month => {
+                    const monthStickers = stickersByYear[year][month];
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    
+                    // Create month header
+                    const monthHeader = document.createElement('div');
+                    monthHeader.className = 'month-header';
+                    monthHeader.innerHTML = `<span class="${category}-header">${monthNames[month]} (${monthStickers.length})</span>`;
+                    modalContent.appendChild(monthHeader);
+                    
+                    // Create sticker container
+                    const stickersContainer = document.createElement('div');
+                    stickersContainer.className = 'month-stickers';
+                    
+                    // Add stickers
+                    monthStickers.forEach(sticker => {
+                        const stickerElement = document.createElement('div');
+                        
+                        if (category === 'writing') {
+                            stickerElement.className = 'sticker writing-sticker';
+                        } else if (category === 'music') {
+                            stickerElement.className = 'square-sticker music-sticker';
+                        } else if (category === 'art') {
+                            stickerElement.className = 'diamond-sticker art-sticker';
+                        } else if (category === 'bfr') {
+                            stickerElement.className = 'sticker bfr-sticker';
+                        }
+                        
+                        stickersContainer.appendChild(stickerElement);
+                    });
+                    
+                    modalContent.appendChild(stickersContainer);
+                });
+            });
+            
+            // Add yearly summary at bottom
+            const bottomStats = document.createElement('div');
+            bottomStats.className = `bottom-stats ${category}`;
+            
+            // Get yearly counts
+            const yearCounts = {};
+            years.forEach(year => {
+                yearCounts[year] = 0;
+                Object.values(stickersByYear[year]).forEach(monthStickers => {
+                    yearCounts[year] += monthStickers.length;
+                });
+            });
+            
+            // Create yearly summary HTML
+            let yearSummaryHTML = '';
+            years.forEach(year => {
+                yearSummaryHTML += `<p class="${category}-header">${year} Efforts: ${yearCounts[year]}</p>`;
+            });
+            
+            bottomStats.innerHTML = yearSummaryHTML;
+            modalContent.appendChild(bottomStats);
+            
+            // Show modal
+            modal.style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('all-stickers-modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('all-stickers-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Initialize the display
+        updateDateDisplay();
+    </script>
+</body>
+</html>
